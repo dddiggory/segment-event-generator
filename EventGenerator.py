@@ -64,7 +64,10 @@ with open("bills.json") as readfile:
 		random_user = str(uuid.uuid4())
 		
 		randomUserList = json.loads(requests.get("https://uinames.com/api/?ext&amount="+str(NUMBER_OF_USERS)).text)
-		currentUser = randomUserList[iteration]
+		try:
+			currentUser = randomUserList[iteration]
+		except KeyError: # if only 1 user is requested, API will return a Dict, not a List.
+			currentUser = randomUserList
 
 		userName = reformat(currentUser["name"] + " " + currentUser["surname"])
 		userEmail = reformat(currentUser["email"])
