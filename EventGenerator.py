@@ -7,15 +7,29 @@ import datetime
 import requests
 import time
 
-#insert your Segment Write Key here
-SEGMENT_WRITE_KEY = "6f4pcfvQXv60D3gWgB1YUAW8N5A82Tu8"
+#User Inputs
+SEGMENT_WRITE_KEY = "" #insert your Segment Write Key here
+NUMBER_OF_USERS = None #Keep below 500 for the sake of the Random User API.
 
 if SEGMENT_WRITE_KEY == "":
 	SEGMENT_WRITE_KEY = raw_input("Insert your Segment write key (or hardcode @ line 11):  ")
-
 analytics.write_key = SEGMENT_WRITE_KEY
 
-NUMBER_OF_USERS = 450
+if NUMBER_OF_USERS == None:
+	print "How many users to generate? (or hardcode @ line 12)"
+	NUMBER_OF_USERS = raw_input("Integer between 1 and 500:  ")
+	try:
+		NUMBER_OF_USERS = int(NUMBER_OF_USERS)
+	except:
+		print "Bad input; defaulting to 500."
+		NUMBER_OF_USERS = 500
+
+	if NUMBER_OF_USERS > 500:
+		NUMBER_OF_USERS = 500
+
+print "Generating " + str(NUMBER_OF_USERS) + " users. You can overwrite this on line 11."
+
+
 
 start_time = time.time()
 
@@ -38,7 +52,8 @@ with open("bills.json") as readfile:
 	eventChoices = [
 		"Application Opened",
 		"Vote",
-		"Bill View"
+		"Bill View",
+		"Comment"
 	]
 
 	d1 = datetime.datetime.now() - datetime.timedelta(days=5)
@@ -76,25 +91,25 @@ with open("bills.json") as readfile:
 			eventProperties = {}
 
 			if eventName == "Application Opened":
-				analytics.track(random_user, eventName, timestamp=randomTimestamp)
+				continue
 			
-			elif eventName == "Vote":
+			elif eventName == "Vote" or eventName == "Comment":
 				eventProperties = {
 					"Current Bill": billChoice["key"], "Bill ID": billChoice["billRef"], 
 					"User Scrolled?": random.choice([True, False]), 
 					"Vote Type": random.choice(["Yea", "Nay"]),
-					"Bill Category": random.choice(["environment", "economy", "immigration", "firearms", "drugs", "nuclear weapons", "civil rights", "privacy", "international trade"])
+					"Bill Category": random.choice(["environment", "economy", "immigration", "firearms", "drugs", "nuclear weapons", "civil rights", "privacy", "international trade"]),
+					"Current Vote Count": random.randint(0,20000)
 					}
-				analytics.track(random_user, "Vote", eventProperties, timestamp=randomTimestamp)
 			
 			elif eventName == "Bill View":
 				eventProperties = {
 					"Current Bill": billChoice["key"], "Bill ID": billChoice["billRef"],
-					"Bill Category": random.choice(["environment", "economy", "immigration", "firearms", "drugs", "nuclear weapons", "civil rights", "privacy", "international trade"])
+					"Bill Category": random.choice(["environment", "economy", "immigration", "firearms", "drugs", "nuclear weapons", "civil rights", "privacy", "international trade"]),
+					"Current Vote Count": random.randint(0,20000)
 					}
-				analytics.track(random_user, "Bill View", eventProperties, timestamp=randomTimestamp)
 
-
+			analytics.track(random_user, eventName, eventProperties, timestamp=randomTimestamp)
 
 
 		
